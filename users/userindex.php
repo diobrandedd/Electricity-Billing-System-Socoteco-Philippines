@@ -169,7 +169,7 @@
                         <a class="nav-link" href="../job_opportunity.php"><i class="fas fa-briefcase me-1"></i>Job Opportunity</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="../users.php"><i class="fas fa-user me-1"></i>Members Portal</a>
+                        <a class="nav-link" href="../auth/customer_login.php"><i class="fas fa-user me-1"></i>Members Portal</a>
                     </li>
                 </ul>
             </div>
@@ -246,7 +246,7 @@
                             <i class="fas fa-headset service-icon"></i>
                             <h5 class="card-title">Support</h5>
                             <p class="card-text">Get help and support for your concerns</p>
-                            <a href="../settings.php#support" class="btn btn-primary">Get Support</a>
+                            <a href="../customer/chat.php" class="btn btn-primary">Get Support</a>
                         </div>
                     </div>
                 </div>
