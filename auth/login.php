@@ -19,6 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user = fetchOne($sql, [$username]);
         
         if ($user && password_verify($password, $user['password'])) {
+            // Ensure no customer session conflicts when admin/staff logs in
+            unset($_SESSION['customer_id'], $_SESSION['customer_account_number'], $_SESSION['customer_name']);
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['full_name'] = $user['full_name'];

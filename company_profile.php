@@ -262,7 +262,7 @@
                                 <h5>About the Logo</h5>
                                 <div class="row">
                                     <div class="col-md-3 text-center mb-3">
-                                        <img src="../img/socotecoLogo.png" alt="SOCOTECO II Logo" class="img-fluid" style="max-height: 150px;">
+                                        <img src="./img/logo1.png" alt="SOCOTECO II Logo" class="img-fluid" style="max-height: 150px;">
                                     </div>
                                     <div class="col-md-9">
                                         <h6>Symbolism:</h6>

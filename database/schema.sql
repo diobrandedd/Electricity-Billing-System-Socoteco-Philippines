@@ -173,3 +173,30 @@ INSERT INTO system_settings (setting_key, setting_value, description) VALUES
 ('distribution_rate', '1.2000', 'Distribution charge per kWh'),
 ('transmission_rate', '0.8000', 'Transmission charge per kWh'),
 ('system_loss_rate', '0.5000', 'System loss charge per kWh');
+
+-- Chat sessions table
+CREATE TABLE IF NOT EXISTS chat_sessions (
+    session_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_id INT NOT NULL,
+    status ENUM('open', 'closed') DEFAULT 'open',
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+-- Chat messages table
+CREATE TABLE IF NOT EXISTS chat_messages (
+    message_id INT PRIMARY KEY AUTO_INCREMENT,
+    session_id INT NOT NULL,
+    sender_type ENUM('customer', 'admin') NOT NULL,
+    sender_customer_id INT NULL,
+    sender_user_id INT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES chat_sessions(session_id),
+    FOREIGN KEY (sender_customer_id) REFERENCES customers(customer_id),
+    FOREIGN KEY (sender_user_id) REFERENCES users(user_id),
+    INDEX idx_session_created_at (session_id, created_at),
+    INDEX idx_unread (session_id, is_read)
+);
