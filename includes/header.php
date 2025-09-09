@@ -206,6 +206,14 @@ requireLogin();
                             </a>
                         </li>
                         <?php endif; ?>
+                        <?php if (in_array($_SESSION['role'], ['admin'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'feedback_management.php' ? 'active' : ''; ?>" 
+                               href="<?php echo url('feedback_management.php'); ?>">
+                                <i class="fas fa-comments"></i>Feedback Management
+                            </a>
+                        </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </nav>

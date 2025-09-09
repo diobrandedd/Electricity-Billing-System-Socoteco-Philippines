@@ -46,6 +46,14 @@ function executeQuery($sql, $params = []) {
     return $stmt;
 }
 
+// Helper function to execute query and return last insert ID
+function executeQueryWithId($sql, $params = []) {
+    $db = getDB();
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    return $db->lastInsertId();
+}
+
 // Helper function to get last inserted ID from a specific statement
 function getLastInsertIdFromStmt($stmt) {
     return $stmt->getConnection()->lastInsertId();

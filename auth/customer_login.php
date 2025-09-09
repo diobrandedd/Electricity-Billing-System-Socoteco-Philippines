@@ -3,7 +3,7 @@ require_once __DIR__ . '/../config/config.php';
 
 // If already logged in as any user, redirect appropriately
 if (isset($_SESSION['customer_id']) && !empty($_SESSION['customer_id'])) {
-    redirect('customer/home.php');
+    redirect('users/userindex.php');
 }
 
 $error = '';
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p class="mb-0">Welcome, <?php echo htmlspecialchars($_SESSION['customer_name']); ?>.</p>
                 </div>
                 <div class="modal-footer border-0">
-                    <a href="<?php echo url('customer/home.php'); ?>" class="btn btn-success">Continue</a>
+                    <a href="<?php echo url('users/userindex.php'); ?>" class="btn btn-success">Continue</a>
                 </div>
             </div>
         </div>
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         const modal = new bootstrap.Modal(document.getElementById('loginSuccessModal'));
         modal.show();
-        setTimeout(function(){ window.location.href = '<?php echo url('customer/home.php'); ?>'; }, 1500);
+        setTimeout(function(){ window.location.href = '<?php echo url('users/userindex.php'); ?>'; }, 1500);
     </script>
     <?php endif; ?>
 </body>

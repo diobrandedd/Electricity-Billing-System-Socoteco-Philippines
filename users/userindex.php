@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../config/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,6 +62,14 @@
             color: white;
             padding: 40px 0 20px;
         }
+        /* Feedback list scroll area */
+        .feedback-scroll {
+            max-height: 380px;
+            overflow-y: auto;
+        }
+        .reply-box { background: #f9fafb; border-left: 3px solid var(--primary-orange); }
+        .truncate { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .reply-toggle { cursor: pointer; color: var(--primary-orange); font-weight: 600; }
         
         .btn-primary {
             background-color: var(--primary-orange);
@@ -169,7 +178,38 @@
                         <a class="nav-link" href="../job_opportunity.php"><i class="fas fa-briefcase me-1"></i>Job Opportunity</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="../auth/customer_login.php"><i class="fas fa-user me-1"></i>Members Portal</a>
+                        <?php if (!empty($_SESSION['customer_id'])): ?>
+                            <div class="dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user me-1"></i><?php echo htmlspecialchars($_SESSION['customer_name']); ?>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="../auth/customer_logout.php">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a></li>
+                                </ul>
+                            </div>
+                        <?php elseif (!empty($_SESSION['user_id']) && $_SESSION['role'] === 'admin'): ?>
+                            <div class="dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-shield me-1"></i><?php echo htmlspecialchars($_SESSION['full_name']); ?> (Admin)
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="../dashboard.php">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="../feedback_management.php">
+                                        <i class="fas fa-comments me-2"></i>Feedback Management
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="../auth/logout.php">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a></li>
+                                </ul>
+                            </div>
+                        <?php else: ?>
+                            <a class="nav-link" href="../auth/customer_login.php"><i class="fas fa-user me-1"></i>Members Portal</a>
+                        <?php endif; ?>
                     </li>
                 </ul>
             </div>
@@ -287,6 +327,70 @@
         </div>
     </section>
 
+    <!-- Feedback Board Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="display-6 fw-bold text-dark">Feedback Board</h2>
+                    <p class="text-muted mb-0">
+                        <?php if (!empty($_SESSION['customer_id'])): ?>
+                            Welcome, <?php echo htmlspecialchars($_SESSION['customer_name']); ?>! Share your thoughts and help us improve our service.
+                        <?php elseif (!empty($_SESSION['user_id']) && $_SESSION['role'] === 'admin'): ?>
+                            Admin view: You can see customer feedback here. To reply, use the <a href="../feedback_management.php">Feedback Management</a> page.
+                        <?php else: ?>
+                            Share your thoughts and help us improve our service. Please log in to post feedback.
+                        <?php endif; ?>
+                    </p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Post Feedback</h5>
+                            <?php if (!empty($_SESSION['customer_id'])): ?>
+                                <form id="feedbackForm" class="d-flex flex-column gap-2">
+                                    <textarea id="feedbackMessage" class="form-control" rows="4" placeholder="Write your feedback..." required></textarea>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                        <span id="feedbackStatus" class="text-muted small"></span>
+                                    </div>
+                                </form>
+                            <?php elseif (!empty($_SESSION['user_id']) && $_SESSION['role'] === 'admin'): ?>
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    As an admin, you can view feedback here. To reply to feedback, please use the 
+                                    <a href="../feedback_management.php" class="alert-link">Feedback Management</a> page.
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-user me-2"></i>
+                                    Please log in to your Member Portal to post feedback.
+                                </div>
+                                <a class="btn btn-primary" href="../auth/customer_login.php">
+                                    <i class="fas fa-user me-1"></i> Log in to post
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">Recent Feedback</h5>
+                                <button id="refreshFeedback" class="btn btn-sm btn-outline-secondary">Refresh</button>
+                            </div>
+                            <div id="feedbackList" class="feedback-scroll d-flex flex-column gap-3"></div>
+                            <div id="feedbackEmpty" class="text-muted text-center py-4" style="display:none;">No feedback yet. Be the first to share!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Information -->
     <section class="py-5">
         <div class="container">
@@ -385,5 +489,192 @@
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+    (function(){
+        const listEl = document.getElementById('feedbackList');
+        const emptyEl = document.getElementById('feedbackEmpty');
+        const refreshBtn = document.getElementById('refreshFeedback');
+        const form = document.getElementById('feedbackForm');
+        const messageInput = document.getElementById('feedbackMessage');
+        const statusEl = document.getElementById('feedbackStatus');
+        const endpoint = '<?php echo url('ajax/feedback.php'); ?>';
+        let lastId = 0;
+        const rendered = new Set();
+        const replyRendered = new Map(); // feedback_id -> Set(reply_id)
+
+        function formatTime(ts){
+            try { return new Date(ts.replace(' ', 'T')).toLocaleString(); } catch(e){ return ts || ''; }
+        }
+
+        function createItemEl(f){
+            const wrap = document.createElement('div');
+            wrap.className = 'border rounded p-3';
+
+            const nameRow = document.createElement('div');
+            nameRow.className = 'd-flex justify-content-between align-items-center mb-1';
+            const name = document.createElement('strong');
+            name.textContent = (f.customer_name || 'Member');
+            const time = document.createElement('small');
+            time.className = 'text-muted';
+            time.textContent = formatTime(f.created_at);
+            nameRow.appendChild(name);
+            nameRow.appendChild(time);
+
+            const msg = document.createElement('div');
+            msg.className = 'text-dark';
+            msg.textContent = f.message || '';
+
+            wrap.appendChild(nameRow);
+            wrap.appendChild(msg);
+
+            // Replies container
+            const replies = document.createElement('div');
+            replies.className = 'd-flex flex-column gap-2 mt-3';
+            replies.dataset.feedbackId = f.feedback_id;
+            wrap.appendChild(replies);
+
+
+            return wrap;
+        }
+
+        function createReplyEl(r){
+            const box = document.createElement('div');
+            box.className = 'reply-box border rounded p-3';
+            const header = document.createElement('div');
+            header.className = 'd-flex justify-content-between align-items-center mb-1';
+            const who = document.createElement('strong');
+            who.textContent = (r.admin_name || 'Admin');
+            const time = document.createElement('small');
+            time.className = 'text-muted';
+            time.textContent = formatTime(r.created_at);
+            header.appendChild(who);
+            header.appendChild(time);
+
+            const body = document.createElement('div');
+            body.className = 'text-dark truncate';
+            body.textContent = r.message || '';
+
+            const toggle = document.createElement('div');
+            toggle.className = 'reply-toggle mt-1';
+            toggle.textContent = 'Read more';
+            let expanded = false;
+            toggle.addEventListener('click', function(){
+                expanded = !expanded;
+                if (expanded) {
+                    body.classList.remove('truncate');
+                    toggle.textContent = 'Show less';
+                } else {
+                    body.classList.add('truncate');
+                    toggle.textContent = 'Read more';
+                }
+            });
+
+            box.appendChild(header);
+            box.appendChild(body);
+            box.appendChild(toggle);
+            return box;
+        }
+
+        function updateEmptyState(){
+            emptyEl.style.display = listEl.children.length ? 'none' : 'block';
+        }
+
+        function renderList(items){
+            if (!Array.isArray(items) || !items.length) { updateEmptyState(); return; }
+            // Ensure items are in ascending id so newest ends up on top when inserting at firstChild
+            items.sort((a,b) => (parseInt(a.feedback_id) - parseInt(b.feedback_id)));
+            items.forEach(f => {
+                const id = parseInt(f.feedback_id);
+                if (rendered.has(id)) return; // avoid duplicates
+                lastId = Math.max(lastId, id);
+                rendered.add(id);
+                listEl.insertBefore(createItemEl(f), listEl.firstChild);
+            });
+            updateEmptyState();
+        }
+
+        function renderRepliesMap(map){
+            if (!map) return;
+            Object.keys(map).forEach(fid => {
+                const replies = map[fid] || [];
+                renderReplies(replies);
+            });
+        }
+
+        function renderReplies(replies){
+            if (!Array.isArray(replies) || !replies.length) return;
+            replies.forEach(r => {
+                const fid = parseInt(r.feedback_id);
+                const rid = parseInt(r.reply_id);
+                let set = replyRendered.get(fid);
+                if (!set) { set = new Set(); replyRendered.set(fid, set); }
+                if (set.has(rid)) return;
+                set.add(rid);
+                const container = listEl.querySelector(`[data-feedback-id="${fid}"]`);
+                if (container) {
+                    container.appendChild(createReplyEl(r));
+                }
+            });
+        }
+
+        function fetchList(since = 0){
+            const url = endpoint + `?action=list&since_id=${since}`;
+            return fetch(url).then(r => r.json()).then(data => {
+                renderList(data.feedback || []);
+                renderRepliesMap(data.replies || {});
+            }).catch(() => {});
+        }
+
+        if (refreshBtn) refreshBtn.addEventListener('click', function(){
+            // Full refresh: clear list and re-fetch from scratch
+            if (listEl) listEl.innerHTML = '';
+            rendered.clear();
+            lastId = 0;
+            fetchList(0);
+        });
+
+        if (form && messageInput) {
+            form.addEventListener('submit', function(e){
+                e.preventDefault();
+                const message = (messageInput.value || '').trim();
+                if (!message) return;
+                statusEl.textContent = 'Sending...';
+                const body = new URLSearchParams({ action: 'create', message });
+                fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.ok) {
+                            // If server returned the item, render it; otherwise, fetch incrementally
+                            if (data.feedback && data.feedback.feedback_id) {
+                                const id = parseInt(data.feedback.feedback_id);
+                                if (!rendered.has(id)) {
+                                    rendered.add(id);
+                                    lastId = Math.max(lastId, id);
+                                    listEl.insertBefore(createItemEl(data.feedback), listEl.firstChild);
+                                }
+                            } else {
+                                // fallback to fetch new items since lastId
+                                fetchList(lastId);
+                            }
+                            messageInput.value = '';
+                            statusEl.textContent = 'Posted';
+                            setTimeout(() => statusEl.textContent = '', 1500);
+                            updateEmptyState();
+                        } else {
+                            statusEl.textContent = (data && data.error) ? data.error : 'Failed to post';
+                        }
+                    })
+                    .catch(() => { statusEl.textContent = 'Network error'; })
+            });
+        }
+
+        // Initial load and polling
+        fetchList(0);
+        setInterval(function(){
+            // Always poll for new items; since_id ensures only new ones are returned
+            fetchList(lastId || 0);
+        }, 5000);
+    })();
+    </script>
 </body>
 </html>

@@ -43,7 +43,7 @@ if (!isset($_SESSION['customer_id'])) {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <strong>Support Chat</strong>
-                    <a href="<?php echo url('customer/home.php'); ?>" class="btn btn-sm btn-outline-secondary">Back</a>
+                    <a href="<?php echo url('users/userindex.php'); ?>" class="btn btn-sm btn-outline-secondary">Back</a>
                 </div>
                 <div class="card-body">
                     <div id="chatBox" class="chat-box"></div>

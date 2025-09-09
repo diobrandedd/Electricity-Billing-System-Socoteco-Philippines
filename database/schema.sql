@@ -200,3 +200,27 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     INDEX idx_session_created_at (session_id, created_at),
     INDEX idx_unread (session_id, is_read)
 );
+
+-- Feedback table for customer feedback board
+CREATE TABLE IF NOT EXISTS feedback (
+    feedback_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_id INT NULL,
+    customer_name VARCHAR(120) NULL,
+    message TEXT NOT NULL,
+    status ENUM('pending','reviewed') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_created_at (created_at),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+-- Feedback replies by admins
+CREATE TABLE IF NOT EXISTS feedback_replies (
+    reply_id INT PRIMARY KEY AUTO_INCREMENT,
+    feedback_id INT NOT NULL,
+    admin_user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (feedback_id) REFERENCES feedback(feedback_id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_user_id) REFERENCES users(user_id),
+    INDEX idx_feedback_created_at (feedback_id, created_at)
+);
