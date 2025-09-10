@@ -90,6 +90,33 @@
         .navbar-nav .nav-link:hover {
             color: var(--primary-orange) !important;
         }
+        
+        /* Priority Number Modal Styles */
+        .priority-number-display {
+            background: linear-gradient(135deg, #ffc107, #ff8f00);
+            border: 3px solid #ff8f00;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+            animation: pulse-glow 2s infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3); }
+            50% { box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5); }
+            100% { box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3); }
+        }
+        
+        .priority-number-text {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-weight: 900;
+        }
+        
+        .queue-status-card {
+            transition: transform 0.2s ease;
+        }
+        
+        .queue-status-card:hover {
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -290,6 +317,18 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card service-card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-ticket-alt service-icon"></i>
+                            <h5 class="card-title">Priority Queue</h5>
+                            <p class="card-text">Get a priority number for faster service</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#priorityModal">
+                                Get Priority Number
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -484,11 +523,168 @@
         </div>
     </footer>
 
+    <!-- Priority Number Modal -->
+    <div class="modal fade" id="priorityModal" tabindex="-1" aria-labelledby="priorityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="priorityModalLabel">
+                        <i class="fas fa-ticket-alt me-2"></i>Priority Queue System
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Next Priority Number -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card priority-number-display text-dark">
+                                <div class="card-body text-center py-4">
+                                    <h2 class="mb-2 priority-number-text">Next Priority Number</h2>
+                                    <h1 class="display-4 fw-bold mb-2 priority-number-text" id="next-priority-number">1</h1>
+                                    <p class="mb-2 fs-5 priority-number-text">This will be your number if you join the queue now</p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="priority-number-text">
+                                                <strong>Estimated Service Date:</strong><br>
+                                                <span id="estimated-service-date">-</span>
+                                            </small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="priority-number-text">
+                                                <strong>Service Day:</strong><br>
+                                                <span id="estimated-day-number">-</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Queue Status -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-primary text-white queue-status-card">
+                                <div class="card-body text-center py-3">
+                                    <h3 id="current-serving">0</h3>
+                                    <p class="mb-0">Currently Serving</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-success text-white queue-status-card">
+                                <div class="card-body text-center py-3">
+                                    <h3 id="served-today">0</h3>
+                                    <p class="mb-0">Served Today</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Status -->
+                    <div id="customer-status">
+                        <?php if (!empty($_SESSION['customer_id'])): ?>
+                            <!-- Logged in customer -->
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-user me-2"></i>Welcome, <?php echo htmlspecialchars($_SESSION['customer_name']); ?>!</h6>
+                                <p class="mb-0">You can now get a priority number for faster service.</p>
+                            </div>
+                            
+                            <!-- Priority Number Generation Form -->
+                            <div id="priority-form-section">
+                                <form id="priorityForm">
+                                    <input type="hidden" name="action" value="generate_priority">
+                                    <input type="hidden" name="customer_id" value="<?php echo $_SESSION['customer_id']; ?>">
+                                    <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+                                    
+                                    <div class="form-group mb-3">
+                                        <label for="preferred_date">Preferred Service Date (Optional)</label>
+                                        <input type="date" class="form-control" id="preferred_date" name="preferred_date" 
+                                               min="<?php echo date('Y-m-d'); ?>" 
+                                               max="<?php echo date('Y-m-d', strtotime('+7 days')); ?>">
+                                        <small class="form-text text-muted">Leave blank for automatic assignment</small>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-ticket-alt me-2"></i>Get My Priority Number
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Existing Priority Number Display -->
+                            <div id="existing-priority" style="display: none;">
+                                <div class="alert alert-success">
+                                    <h5><i class="fas fa-check-circle me-2"></i>You already have a priority number!</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Priority Number:</strong> <span class="badge bg-primary fs-5" id="existing-number">0</span></p>
+                                            <p><strong>Service Date:</strong> <span id="existing-date">-</span></p>
+                                            <p><strong>Status:</strong> <span class="badge bg-warning" id="existing-status">-</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Generated:</strong> <span id="existing-generated">-</span></p>
+                                            <p><strong>Estimated Wait:</strong> <span id="existing-wait">-</span></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-danger btn-sm" id="cancel-priority">
+                                        <i class="fas fa-times me-1"></i>Cancel Priority Number
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        <?php else: ?>
+                            <!-- Not logged in -->
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-exclamation-triangle me-2"></i>Login Required</h6>
+                                <p class="mb-3">You need to be logged in to get a priority number.</p>
+                                <a href="../auth/customer_login.php" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login to Continue
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Queue Statistics -->
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h5 class="text-warning" id="pending-today">0</h5>
+                                <small class="text-muted">Pending Today</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h5 class="text-info" id="daily-capacity">1000</h5>
+                                <small class="text-muted">Daily Capacity</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h5 class="text-primary" id="total-pending">0</h5>
+                                <small class="text-muted">Total Pending</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-info" onclick="refreshQueueStatus()">
+                        <i class="fas fa-sync me-1"></i>Refresh Status
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
     (function(){
         const listEl = document.getElementById('feedbackList');
@@ -675,6 +871,177 @@
             fetchList(lastId || 0);
         }, 5000);
     })();
+
+    // Priority Number System JavaScript
+    $(document).ready(function() {
+        // Load initial queue status when modal is shown
+        $('#priorityModal').on('shown.bs.modal', function() {
+            refreshQueueStatus();
+            checkExistingPriority();
+        });
+
+        // Handle priority number generation
+        $('#priorityForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = $(this).serialize();
+            
+            $.ajax({
+                url: '../ajax/priority_user.php',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                beforeSend: function() {
+                    $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Generating...');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            html: `
+                                <div class="text-center">
+                                    <h2 class="text-primary mb-3">${response.priority_number}</h2>
+                                    <p><strong>Service Date:</strong> ${new Date(response.service_date).toLocaleDateString()}</p>
+                                    <p><strong>Estimated Wait:</strong> Day ${response.estimated_wait_time.day_number}, Position ${response.estimated_wait_time.position_in_day}</p>
+                                </div>
+                            `,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Hide form and show existing priority
+                            $('#priority-form-section').hide();
+                            $('#existing-priority').show();
+                            
+                            // Update existing priority display
+                            $('#existing-number').text(response.priority_number);
+                            $('#existing-date').text(new Date(response.service_date).toLocaleDateString());
+                            $('#existing-status').text('Pending');
+                            $('#existing-generated').text(new Date().toLocaleString());
+                            $('#existing-wait').text(`Day ${response.estimated_wait_time.day_number}, Position ${response.estimated_wait_time.position_in_day}`);
+                            
+                            refreshQueueStatus();
+                        });
+                    } else {
+                        Swal.fire('Error', response.error, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'An error occurred while generating priority number', 'error');
+                },
+                complete: function() {
+                    $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-ticket-alt me-2"></i>Get My Priority Number');
+                }
+            });
+        });
+
+        // Handle priority number cancellation
+        $('#cancel-priority').on('click', function() {
+            var priorityNumber = $('#existing-number').text();
+            
+            Swal.fire({
+                title: 'Cancel Priority Number',
+                text: 'Are you sure you want to cancel this priority number?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, cancel it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '../ajax/priority_user.php',
+                        type: 'POST',
+                        data: {
+                            action: 'cancel_priority',
+                            priority_number: priorityNumber,
+                            reason: 'Cancelled by customer',
+                            csrf_token: '<?php echo generateCSRFToken(); ?>'
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Cancelled!', response.message, 'success').then(() => {
+                                    // Show form and hide existing priority
+                                    $('#priority-form-section').show();
+                                    $('#existing-priority').hide();
+                                    refreshQueueStatus();
+                                });
+                            } else {
+                                Swal.fire('Error', response.error, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'An error occurred while cancelling priority number', 'error');
+                        }
+                    });
+                }
+            });
+        });
+    });
+
+    // Refresh queue status function
+    function refreshQueueStatus() {
+        $.ajax({
+            url: '../ajax/priority_user.php',
+            type: 'GET',
+            data: { action: 'get_queue_status' },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    $('#next-priority-number').text(response.data.next_priority_number);
+                    $('#estimated-service-date').text(new Date(response.data.estimated_service_date).toLocaleDateString());
+                    $('#estimated-day-number').text('Day ' + response.data.estimated_day_number);
+                    $('#current-serving').text(response.data.current_serving);
+                    $('#served-today').text(response.data.served_today);
+                    $('#pending-today').text(response.data.today_pending);
+                    $('#daily-capacity').text(response.data.daily_capacity);
+                    $('#total-pending').text(response.data.total_pending);
+                }
+            },
+            error: function() {
+                console.log('Error updating queue status');
+            }
+        });
+    }
+
+    // Check for existing priority number
+    function checkExistingPriority() {
+        <?php if (!empty($_SESSION['customer_id'])): ?>
+        $.ajax({
+            url: '../ajax/priority_user.php',
+            type: 'GET',
+            data: { 
+                action: 'check_existing',
+                customer_id: <?php echo $_SESSION['customer_id']; ?>
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success && response.has_existing) {
+                    var latest = response.data;
+                    if (latest.status === 'pending') {
+                        // Show existing priority
+                        $('#priority-form-section').hide();
+                        $('#existing-priority').show();
+                        
+                        $('#existing-number').text(latest.priority_number);
+                        $('#existing-date').text(new Date(latest.service_date).toLocaleDateString());
+                        $('#existing-status').text(latest.status.charAt(0).toUpperCase() + latest.status.slice(1));
+                        $('#existing-generated').text(new Date(latest.generated_at).toLocaleString());
+                        
+                        // Calculate estimated wait
+                        var dayNumber = Math.ceil(latest.priority_number / 1000);
+                        var positionInDay = ((latest.priority_number - 1) % 1000) + 1;
+                        $('#existing-wait').text(`Day ${dayNumber}, Position ${positionInDay}`);
+                    }
+                }
+            },
+            error: function() {
+                console.log('Error checking existing priority');
+            }
+        });
+        <?php endif; ?>
+    }
     </script>
 </body>
 </html>

@@ -180,6 +180,24 @@ requireLogin();
                         </li>
                         <?php endif; ?>
                         
+                        <?php if (in_array($_SESSION['role'], ['admin', 'cashier'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'priority_calling_system.php' ? 'active' : ''; ?>" 
+                               href="<?php echo url('priority_calling_system.php'); ?>">
+                                <i class="fas fa-microphone"></i>Priority Calling
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                        
+                        <?php if (in_array($_SESSION['role'], ['admin', 'cashier'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'priority_queue_management.php' ? 'active' : ''; ?>" 
+                               href="<?php echo url('priority_queue_management.php'); ?>">
+                                <i class="fas fa-list"></i>Queue Management
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                        
                         <?php if (in_array($_SESSION['role'], ['admin'])): ?>
                         <li class="nav-item">
                             <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : ''; ?>" 
@@ -203,6 +221,15 @@ requireLogin();
                             <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>" 
                                href="<?php echo url('settings.php'); ?>">
                                 <i class="fas fa-cog"></i>Settings
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                        
+                        <?php if (in_array($_SESSION['role'], ['admin'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'priority_settings.php' ? 'active' : ''; ?>" 
+                               href="<?php echo url('priority_settings.php'); ?>">
+                                <i class="fas fa-ticket-alt"></i>Priority Settings
                             </a>
                         </li>
                         <?php endif; ?>

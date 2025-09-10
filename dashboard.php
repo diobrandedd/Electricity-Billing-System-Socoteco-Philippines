@@ -51,6 +51,7 @@ $monthly_revenue = fetchAll("
     GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
     ORDER BY month
 ");
+
 ?>
 
 <div class="row">
@@ -191,6 +192,14 @@ $monthly_revenue = fetchAll("
                     <div class="col-md-3 mb-3">
                         <a href="<?php echo url('payments.php?action=add'); ?>" class="btn btn-warning w-100">
                             <i class="fas fa-credit-card me-2"></i>Process Payment
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if (in_array($_SESSION['role'], ['admin', 'cashier'])): ?>
+                    <div class="col-md-3 mb-3">
+                        <a href="<?php echo url('priority_calling_system.php'); ?>" class="btn btn-success w-100">
+                            <i class="fas fa-microphone me-2"></i>Priority Calling
                         </a>
                     </div>
                     <?php endif; ?>
